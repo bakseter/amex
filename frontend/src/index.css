@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+@import 'tailwindcss';
+
+@theme {
+    --font-mono: 'Geist Mono', monospace;
+    --font-serif: 'Instrument Serif', serif;
+
+    --color-bg: #0c0c0e;
+    --color-surface: #111114;
+    --color-surface2: #18181c;
+    --color-border: #222228;
+    --color-border2: #2e2e38;
+    --color-text: #e2e2e8;
+    --color-muted: #5a5a68;
+    --color-muted2: #7a7a8a;
+
+    --color-andreas: #60a5fa;
+    --color-nikoline: #fb923c;
+    --color-shared: #4ade80;
+    --color-danger: #f87171;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Thin scrollbars everywhere */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border2) transparent;
+}
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border2);
+    border-radius: 2px;
+}
+
+/* Row hover transition */
+.tx-row {
+    transition: background 60ms ease;
+}
