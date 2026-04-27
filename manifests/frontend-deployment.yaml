@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: amex
+  annotations:
+    keel.sh/match-tag: 'true'
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/bakseter/amex/frontend:latest
+          ports:
+            - name: http
+              containerPort: 3000
+          volumeMounts:
+            - name: nginx-tmp
+              mountPath: /tmp/nginx
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: nginx-tmp
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - frontend
+              topologyKey: bakseter.net/physical-node
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsGroup: 65534
+        runAsUser: 6554
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups:
+          - 65534

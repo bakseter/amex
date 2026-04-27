@@ -1,0 +1,23 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: frontend
+  namespace: amex
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+
+  ingress:
+    # Allow ingress from Tailscale
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: tailscale
+            tailscale.com/parent-resource: amex
+            tailscale.com/parent-resource-ns: amex
+      toPorts:
+        - ports:
+            - port: '3000'
+              protocol: TCP
+
+  egress: [] # no egress allowed

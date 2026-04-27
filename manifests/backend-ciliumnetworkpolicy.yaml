@@ -1,0 +1,73 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: backend
+  namespace: amex
+spec:
+  endpointSelector:
+    matchLabels:
+      app: backend
+
+  ingress:
+    # Allow ingress from Tailscale
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: tailscale
+            tailscale.com/parent-resource: amex
+            tailscale.com/parent-resource-ns: amex
+      toPorts:
+        - rules:
+            http:
+              - path: '/api/.*'
+          ports:
+            - port: '8000'
+              protocol: TCP
+
+  #   # Allow ingress from Prometheus for metrics scraping
+  #   - fromEndpoints:
+  #       - matchLabels:
+  #           k8s:io.kubernetes.pod.namespace: monitoring
+  #           app.kubernetes.io/name: prometheus
+  #     toPorts:
+  #       - rules:
+  #           http:
+  #             - path: '/metrics'
+  #               method: 'GET'
+  #         ports:
+  #           - port: '8080'
+  #             protocol: TCP
+
+  egress:
+    # Allow egress to kube-dns (needed for DNS resolution)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: '53'
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: '*'
+
+    # Allow egress to database
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/instance: amex-database
+      toPorts:
+        - rules:
+            http: []
+          ports:
+            - port: '5432'
+              protocol: TCP
+
+#   # Allow sending logs via OTLP to Grafana Alloy
+#   - toEndpoints:
+#       - matchLabels:
+#           k8s:io.kubernetes.pod.namespace: monitoring
+#           app.kubernetes.io/name: alloy
+#     toPorts:
+#       - ports:
+#           - port: '4317'
+#             protocol: TCP

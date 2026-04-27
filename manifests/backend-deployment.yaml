@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: amex
+  annotations:
+    keel.sh/match-tag: 'true'
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    #       logs.bakseter.net/scrape: 'false'
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/bakseter/amex/backend:latest
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: amex-database-app
+                  key: dburl
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://monitoring-alloy.monitoring.svc.cluster.local:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - backend
+              topologyKey: bakseter.net/physical-node
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsGroup: 65534
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups:
+          - 65534
