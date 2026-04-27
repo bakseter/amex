@@ -59,11 +59,11 @@ spec:
                       - backend
               topologyKey: bakseter.net/physical-node
       securityContext:
-        fsGroup: 65534
+        fsGroup: 6666
         runAsNonRoot: true
-        runAsGroup: 65534
-        runAsUser: 65534
+        runAsGroup: 6666
+        runAsUser: 6666
         seccompProfile:
           type: RuntimeDefault
         supplementalGroups:
-          - 65534
+          - 6666
