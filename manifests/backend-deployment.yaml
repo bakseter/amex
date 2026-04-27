@@ -24,7 +24,7 @@ spec:
           image: ghcr.io/bakseter/amex/backend:latest
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 8000
           env:
             - name: DATABASE_URL
               valueFrom:
