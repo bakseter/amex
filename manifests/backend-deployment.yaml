@@ -30,7 +30,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: amex-database-app
-                  key: dburl
+                  key: uri
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://monitoring-alloy.monitoring.svc.cluster.local:4317
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
