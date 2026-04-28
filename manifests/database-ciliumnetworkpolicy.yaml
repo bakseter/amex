@@ -30,16 +30,16 @@ spec:
             - port: '8000'
               protocol: TCP
 
-    # Allow ingress from database replicas
-    - fromEndpoints:
-        - matchLabels:
-            app.kubernetes.io/instance: amex-database
-      toPorts:
-        - ports:
-            - port: '5432'
-              protocol: TCP
-            - port: '8000'
-              protocol: TCP
+  #   # Allow ingress from database replicas
+  #   - fromEndpoints:
+  #       - matchLabels:
+  #           app.kubernetes.io/instance: amex-database
+  #     toPorts:
+  #       - ports:
+  #           - port: '5432'
+  #             protocol: TCP
+  #           - port: '8000'
+  #             protocol: TCP
 
   egress:
     # Allow egress to kube-dns (needed for DNS resolution)
@@ -58,14 +58,13 @@ spec:
     # Allow egress to kube-apiserver (needed for getting Cluster CR (?))
     - toEntities:
         - kube-apiserver
-
-    # Allow egress to database replicas
-    - toEndpoints:
-        - matchLabels:
-            app.kubernetes.io/instance: amex-database
-      toPorts:
-        - ports:
-            - port: '5432'
-              protocol: TCP
-            - port: '8000'
-              protocol: TCP
+#   # Allow egress to database replicas
+#   - toEndpoints:
+#       - matchLabels:
+#           app.kubernetes.io/instance: amex-database
+#     toPorts:
+#       - ports:
+#           - port: '5432'
+#             protocol: TCP
+#           - port: '8000'
+#             protocol: TCP
