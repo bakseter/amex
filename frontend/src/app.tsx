@@ -10,19 +10,27 @@ import UploadZone from '@/components/upload-zone';
 const App = () => {
     const { data: invoices = [] } = useListInvoicesQuery();
     const [activeId, setActiveId] = useState<number | null>(null);
+    const [showInvoices, setShowInvoices] = useState(false);
 
     // Auto-select the most recent invoice
-    const selectedId = activeId ?? invoices[0]?.id ?? null;
+    const selectedId = activeId ?? invoices[0]?.id;
 
     return (
-        <div className="flex h-screen overflow-hidden font-sans text-gray-800 bg-white">
+        <div className="flex flex-col md:flex-row h-screen overflow-hidden font-sans text-gray-800 bg-white">
             {/* Left sidebar — invoice list */}
-            <div className="w-64 shrink-0 border-r border-gray-100 flex flex-col overflow-hidden">
+            <div
+                className={`${showInvoices ? 'flex' : 'hidden'} md:flex w-full md:w-64 shrink-0 border-r border-gray-100 flex-col overflow-hidden absolute md:relative z-10 bg-white h-full`}
+            >
                 <div className="px-4 py-3 border-b border-gray-100">
                     <div className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
                         Invoices
                     </div>
-                    <UploadZone onUploaded={setActiveId} />
+                    <UploadZone
+                        onUploaded={(id) => {
+                            setActiveId(id);
+                            setShowInvoices(false);
+                        }}
+                    />
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
                     {invoices.length === 0 && (
@@ -30,13 +38,14 @@ const App = () => {
                             No invoices yet
                         </div>
                     )}
-                    {invoices.map((inv) => (
+                    {invoices.map((invoice) => (
                         <InvoiceRow
-                            key={inv.id}
-                            invoice={inv}
-                            active={inv.id === selectedId}
+                            key={invoice.id}
+                            invoice={invoice}
+                            active={invoice.id === selectedId}
                             onSelect={() => {
-                                setActiveId(inv.id);
+                                setActiveId(invoice.id);
+                                setShowInvoices(false);
                             }}
                         />
                     ))}
@@ -45,21 +54,40 @@ const App = () => {
 
             {/* Main — transactions */}
             <div className="flex flex-col flex-1 overflow-hidden">
-                {selectedId === null ? (
-                    <div className="flex-1 flex items-center justify-center text-sm text-gray-300">
-                        Upload an invoice to get started
-                    </div>
-                ) : (
+                {selectedId ? (
                     <>
+                        <div className="flex md:hidden items-center gap-2 px-3 py-2 border-b border-gray-100 text-xs">
+                            <button
+                                onClick={() => {
+                                    setShowInvoices((show) => !show);
+                                }}
+                                className="text-blue-500 underline"
+                            >
+                                {showInvoices
+                                    ? 'Hide invoices'
+                                    : 'Switch invoice'}
+                            </button>
+                            <span className="text-gray-400 truncate ml-auto">
+                                {
+                                    invoices.find(
+                                        (invoice) => invoice.id === selectedId
+                                    )?.filename
+                                }
+                            </span>
+                        </div>
                         <TransactionTable invoiceId={selectedId} />
                         <ExportBar invoiceId={selectedId} />
                     </>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center text-sm text-gray-300">
+                        Upload an invoice to get started
+                    </div>
                 )}
             </div>
 
             {/* Right sidebar — summary */}
-            {selectedId !== null && (
-                <div className="w-52 shrink-0 border-l border-gray-100 p-4 overflow-y-auto">
+            {selectedId && (
+                <div className="hidden md:block w-52 shrink-0 border-l border-gray-100 p-4 overflow-y-auto">
                     <Summary invoiceId={selectedId} />
                 </div>
             )}

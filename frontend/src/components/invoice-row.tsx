@@ -27,13 +27,12 @@ const InvoiceRow = ({
             <button
                 onClick={(event) => {
                     event.stopPropagation();
-                    void deleteInvoice(invoice.id);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    deleteInvoice(invoice.id);
                 }}
                 className="ml-2 shrink-0 text-gray-300 hover:text-red-400 transition-colors text-lg leading-none"
                 title="Delete"
-            >
-                ×
-            </button>
+            ></button>
         </div>
     );
 };

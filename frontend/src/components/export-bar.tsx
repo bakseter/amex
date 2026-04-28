@@ -1,5 +1,7 @@
+import { backendUrl } from '@/api/transaction';
+
 const ExportBar = ({ invoiceId }: { invoiceId: number }) => {
-    const base = `http://localhost:8000/api/invoices/${String(invoiceId)}/export`;
+    const base = `${backendUrl}/api/invoices/${String(invoiceId)}/export`;
 
     return (
         <div className="flex gap-2 px-3 py-2 border-t border-gray-100 shrink-0 text-xs">

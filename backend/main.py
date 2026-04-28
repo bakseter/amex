@@ -8,7 +8,7 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile, File
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import (
     create_engine,
@@ -91,6 +91,7 @@ app = FastAPI(title="Invoice Parser API")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+
 def _owes(amount: float, cardholder: str, is_shared: bool) -> dict[str, float]:
     result = {}
     for person, ratio in SPLIT_RATIO.items():
@@ -124,6 +125,7 @@ def _tx_to_dict(tx: TransactionModel) -> dict:
 
 # ── Pydantic schemas ───────────────────────────────────────────────────────────
 
+
 class TransactionUpdate(BaseModel):
     isShared: bool | None = None
     category: str | None = None
@@ -131,6 +133,7 @@ class TransactionUpdate(BaseModel):
 
 
 # ── Invoice endpoints ──────────────────────────────────────────────────────────
+
 
 @app.post("/api/invoices", status_code=201)
 def upload_invoice(file: UploadFile = File(...)):
@@ -188,7 +191,9 @@ def upload_invoice(file: UploadFile = File(...)):
 @app.get("/api/invoices")
 def list_invoices():
     with SessionLocal() as db:
-        invoices = db.query(InvoiceModel).order_by(InvoiceModel.uploaded_at.desc()).all()
+        invoices = (
+            db.query(InvoiceModel).order_by(InvoiceModel.uploaded_at.desc()).all()
+        )
         return [
             {
                 "id": inv.id,
@@ -225,6 +230,7 @@ def delete_invoice(invoice_id: int):
 
 
 # ── Transaction endpoints ──────────────────────────────────────────────────────
+
 
 @app.get("/api/invoices/{invoice_id}/transactions")
 def get_transactions(invoice_id: int):
@@ -273,6 +279,7 @@ def update_transaction(transaction_id: int, update: TransactionUpdate):
 
 # ── Summary endpoint ───────────────────────────────────────────────────────────
 
+
 @app.get("/api/invoices/{invoice_id}/summary")
 def get_summary(invoice_id: int):
     with SessionLocal() as db:
@@ -293,7 +300,10 @@ def get_summary(invoice_id: int):
                 e[p] += owes[p]
 
         person_totals = {
-            p: sum(_owes(tx.amount, tx.cardholder, tx.is_shared)[p] for tx in inv.transactions)
+            p: sum(
+                _owes(tx.amount, tx.cardholder, tx.is_shared)[p]
+                for tx in inv.transactions
+            )
             for p in persons
         }
         grand = sum(tx.amount for tx in inv.transactions)
@@ -307,6 +317,7 @@ def get_summary(invoice_id: int):
 
 
 # ── Export endpoint ────────────────────────────────────────────────────────────
+
 
 @app.post("/api/invoices/{invoice_id}/export")
 def export_csv(invoice_id: int):
@@ -330,7 +341,15 @@ def export_transactions_csv(invoice_id: int):
         buf = io.StringIO()
         w = csv.writer(buf)
         w.writerow(
-            ["Date", "Description", "Category", "Amount (NOK)", "Cardholder", "Shared", "Modified"]
+            [
+                "Date",
+                "Description",
+                "Category",
+                "Amount (NOK)",
+                "Cardholder",
+                "Shared",
+                "Modified",
+            ]
             + [f"{p} owes (NOK)" for p in persons]
         )
         for tx in sorted(inv.transactions, key=lambda t: (t.date, t.cardholder)):
@@ -369,7 +388,9 @@ def export_summary_csv(invoice_id: int):
 
         for tx in inv.transactions:
             owes = _owes(tx.amount, tx.cardholder, tx.is_shared)
-            e = cats.setdefault(tx.category, {"total": 0.0, **{p: 0.0 for p in persons}})
+            e = cats.setdefault(
+                tx.category, {"total": 0.0, **{p: 0.0 for p in persons}}
+            )
             e["total"] += tx.amount
             for p in persons:
                 e[p] += owes[p]
@@ -378,25 +399,35 @@ def export_summary_csv(invoice_id: int):
         w = csv.writer(buf)
         w.writerow(["Category", "Total (NOK)"] + [f"{p} owes (NOK)" for p in persons])
         for cat, vals in sorted(cats.items(), key=lambda x: -x[1]["total"]):
-            w.writerow([cat, f"{vals['total']:.2f}"] + [f"{vals[p]:.2f}" for p in persons])
+            w.writerow(
+                [cat, f"{vals['total']:.2f}"] + [f"{vals[p]:.2f}" for p in persons]
+            )
 
         grand = sum(tx.amount for tx in inv.transactions)
         person_totals = {
-            p: sum(_owes(tx.amount, tx.cardholder, tx.is_shared)[p] for tx in inv.transactions)
+            p: sum(
+                _owes(tx.amount, tx.cardholder, tx.is_shared)[p]
+                for tx in inv.transactions
+            )
             for p in persons
         }
-        w.writerow(["TOTAL", f"{grand:.2f}"] + [f"{person_totals[p]:.2f}" for p in persons])
+        w.writerow(
+            ["TOTAL", f"{grand:.2f}"] + [f"{person_totals[p]:.2f}" for p in persons]
+        )
 
         stem = Path(inv.filename).stem
         buf.seek(0)
         return StreamingResponse(
             iter([buf.getvalue()]),
             media_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{stem}-summary.csv"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="{stem}-summary.csv"'
+            },
         )
 
 
 # ── Meta endpoint ──────────────────────────────────────────────────────────────
+
 
 @app.get("/api/meta")
 def get_meta():

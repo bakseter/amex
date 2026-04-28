@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const backendUrl =
     (import.meta.env.VITE_BACKEND_URL as string | undefined | null) ??
-    'http://localhost:8080/api';
+    'http://localhost:8000/api';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -39,8 +39,6 @@ export interface Invoice {
     transaction_count: number;
 }
 
-export interface UploadInvoiceResponse extends Invoice {}
-
 export interface Meta {
     categories: string[];
     cardholders: string[];
@@ -70,10 +68,11 @@ const api = createApi({
             providesTags: ['Invoice'],
         }),
 
-        uploadInvoice: builder.mutation<UploadInvoiceResponse, File>({
+        uploadInvoice: builder.mutation<Invoice, File>({
             query: (file) => {
                 const body = new FormData();
                 body.append('file', file);
+
                 return {
                     url: 'invoices',
                     method: 'POST',
@@ -85,7 +84,7 @@ const api = createApi({
 
         deleteInvoice: builder.mutation<void, number>({
             query: (invoiceId) => ({
-                url: `invoices/${invoiceId}`,
+                url: `invoices/${String(invoiceId)}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Invoice'],
@@ -94,9 +93,10 @@ const api = createApi({
         // Returns a blob URL — call URL.createObjectURL on the result
         downloadInvoicePdf: builder.query<string, number>({
             query: (invoiceId) => ({
-                url: `invoices/${invoiceId}/pdf`,
+                url: `invoices/${String(invoiceId)}/pdf`,
                 responseHandler: async (response) => {
                     const blob = await response.blob();
+
                     return URL.createObjectURL(blob);
                 },
                 // Prevent RTK Query from trying to parse as JSON
@@ -107,7 +107,7 @@ const api = createApi({
         // ── Transactions ───────────────────────────────────────────────────────
 
         getTransactions: builder.query<Transaction[], number>({
-            query: (invoiceId) => `invoices/${invoiceId}/transactions`,
+            query: (invoiceId) => `invoices/${String(invoiceId)}/transactions`,
             providesTags: (_result, _error, invoiceId) => [
                 { type: 'Transaction', id: invoiceId },
             ],
@@ -118,7 +118,7 @@ const api = createApi({
             { invoiceId: number; id: number; fields: TransactionPatch }
         >({
             query: ({ id, fields }) => ({
-                url: `transactions/${id}`,
+                url: `transactions/${String(id)}`,
                 method: 'PATCH',
                 body: fields,
             }),
@@ -131,7 +131,7 @@ const api = createApi({
         // ── Summary ────────────────────────────────────────────────────────────
 
         getSummary: builder.query<Summary, number>({
-            query: (invoiceId) => `invoices/${invoiceId}/summary`,
+            query: (invoiceId) => `invoices/${String(invoiceId)}/summary`,
             providesTags: (_result, _error, invoiceId) => [
                 { type: 'Summary', id: invoiceId },
             ],
@@ -142,9 +142,10 @@ const api = createApi({
         // Both export endpoints return a blob URL for download
         exportTransactionsCsv: builder.query<string, number>({
             query: (invoiceId) => ({
-                url: `invoices/${invoiceId}/export/transactions`,
+                url: `invoices/${String(invoiceId)}/export/transactions`,
                 responseHandler: async (response) => {
                     const blob = await response.blob();
+
                     return URL.createObjectURL(blob);
                 },
                 cache: 'no-cache',
@@ -153,9 +154,10 @@ const api = createApi({
 
         exportSummaryCsv: builder.query<string, number>({
             query: (invoiceId) => ({
-                url: `invoices/${invoiceId}/export/summary`,
+                url: `invoices/${String(invoiceId)}/export/summary`,
                 responseHandler: async (response) => {
                     const blob = await response.blob();
+
                     return URL.createObjectURL(blob);
                 },
                 cache: 'no-cache',
@@ -183,5 +185,7 @@ export const {
     useExportSummaryCsvQuery,
     useGetMetaQuery,
 } = api;
+
+export { backendUrl };
 
 export default api;

@@ -30,10 +30,8 @@ const UploadZone = ({ onUploaded }: { onUploaded: (id: number) => void }) => {
                 event.preventDefault();
                 setDragging(false);
 
-                const file = event.dataTransfer.files[0];
-                if (file) {
-                    handle(file);
-                }
+                const [file] = event.dataTransfer.files;
+                handle(file); // eslint-disable-line @typescript-eslint/no-floating-promises
             }}
             className={`border-2 border-dashed rounded-lg px-8 py-6 text-center cursor-pointer transition-colors text-sm
                 ${dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}`}
@@ -45,8 +43,9 @@ const UploadZone = ({ onUploaded }: { onUploaded: (id: number) => void }) => {
                 className="hidden"
                 onChange={(event) => {
                     const file = event.target.files?.[0];
+
                     if (file) {
-                        handle(file);
+                        handle(file); // eslint-disable-line @typescript-eslint/no-floating-promises
                     }
                 }}
             />

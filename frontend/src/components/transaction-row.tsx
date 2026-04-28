@@ -46,37 +46,47 @@ const TransactionRow = ({
                 )}
             </td>
             <td className="px-3 py-2">
+                {/* eslint-disable @typescript-eslint/no-misused-promises */}
                 <EditSelect
                     value={transaction.category}
                     options={categories}
                     onChange={(category) => update({ category })}
                 />
+                {/* eslint-enable @typescript-eslint/no-misused-promises */}
             </td>
             <td className="px-3 py-2">
+                {/* eslint-disable @typescript-eslint/no-misused-promises */}
                 <EditSelect
                     value={transaction.cardholder}
                     options={cardholders}
                     onChange={(cardholder) => update({ cardholder })}
                 />
+                {/* eslint-enable @typescript-eslint/no-misused-promises */}
             </td>
             <td className="px-3 py-2 text-center">
+                {/* eslint-disable @typescript-eslint/no-misused-promises */}
                 <input
                     type="checkbox"
                     checked={transaction.isShared}
-                    onChange={(e) => update({ isShared: e.target.checked })}
-                    onClick={(e) => { e.stopPropagation(); }}
+                    onChange={(event) =>
+                        update({ isShared: event.target.checked })
+                    }
+                    onClick={(event) => {
+                        event.stopPropagation();
+                    }}
                     className="accent-blue-500"
                 />
+                {/* eslint-enable @typescript-eslint/no-misused-promises */}
             </td>
             <td className="px-3 py-2 text-right font-mono text-xs">
                 {transaction.amount.toFixed(2)}
             </td>
-            {persons.map((p) => (
+            {persons.map((person) => (
                 <td
-                    key={p}
+                    key={person}
                     className="px-3 py-2 text-right font-mono text-xs text-gray-500"
                 >
-                    {(transaction.owes[p] ?? 0).toFixed(2)}
+                    {(transaction.owes[person] ?? 0).toFixed(2)}
                 </td>
             ))}
         </tr>

@@ -57,7 +57,7 @@ const TransactionTable = ({ invoiceId }: { invoiceId: number }) => {
         const keys = new Set<string>();
 
         transactions.forEach((transaction) => {
-            Object.keys(transaction.owes).forEach((k) => keys.add(k));
+            Object.keys(transaction.owes).forEach((key) => keys.add(key));
         });
 
         return [...keys];
