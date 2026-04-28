@@ -1,12 +1,12 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: frontend
+  name: amex-frontend
   namespace: amex
 spec:
   endpointSelector:
     matchLabels:
-      app: frontend
+      app: amex-frontend
 
   ingress:
     # Allow ingress from Tailscale

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: amex-backend
   namespace: amex
   annotations:
     keel.sh/match-tag: 'true'
@@ -12,15 +12,15 @@ spec:
   revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: backend
+      app: amex-backend
   template:
     metadata:
       labels:
-        app: backend
-    #       logs.bakseter.net/scrape: 'false'
+        app: amex-backend
+        logs.bakseter.net/scrape: 'false'
     spec:
       containers:
-        - name: backend
+        - name: amex-backend
           image: ghcr.io/bakseter/amex/backend:latest
           ports:
             - name: http
@@ -55,7 +55,7 @@ spec:
       #                 - key: app
       #                   operator: In
       #                   values:
-      #                     - backend
+      #                     - amex-backend
       #             topologyKey: bakseter.net/physical-node
       securityContext:
         fsGroup: 6666

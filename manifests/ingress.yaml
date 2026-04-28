@@ -14,7 +14,7 @@ spec:
             pathType: Exact
             backend:
               service:
-                name: frontend
+                name: amex-frontend
                 port:
                   name: http
 
@@ -22,7 +22,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: backend
+                name: amex-backend
                 port:
                   name: http
   tls:

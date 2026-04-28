@@ -6,6 +6,7 @@ import os
 import tempfile
 from pathlib import Path
 
+import logging
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
@@ -24,6 +25,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime, timezone
+from opentelemetry import _logs
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from parse import (
     parse_invoice,
@@ -87,6 +94,20 @@ Base.metadata.create_all(bind=engine)
 # ── FastAPI app ────────────────────────────────────────────────────────────────
 
 app = FastAPI(title="Invoice Parser API")
+
+# --─ OpenTelemetry setup ────────────────────────────────────────────────────────
+
+resource = Resource.create({"service.name": "amex-backend"})
+logger_provider = LoggerProvider(resource=resource)
+_logs.set_logger_provider(logger_provider)
+
+exporter = OTLPLogExporter()
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
+
+handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+logging.getLogger().addHandler(handler)
+
+FastAPIInstrumentor.instrument_app(app)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

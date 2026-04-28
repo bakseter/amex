@@ -1,12 +1,12 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: backend
+  name: amex-backend
   namespace: amex
 spec:
   endpointSelector:
     matchLabels:
-      app: backend
+      app: amex-backend
 
   ingress:
     # Allow ingress from Tailscale
@@ -62,12 +62,12 @@ spec:
             - port: '5432'
               protocol: TCP
 
-#   # Allow sending logs via OTLP to Grafana Alloy
-#   - toEndpoints:
-#       - matchLabels:
-#           k8s:io.kubernetes.pod.namespace: monitoring
-#           app.kubernetes.io/name: alloy
-#     toPorts:
-#       - ports:
-#           - port: '4317'
-#             protocol: TCP
+    # Allow sending logs via OTLP to Grafana Alloy
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: alloy
+      toPorts:
+        - ports:
+            - port: '4317'
+              protocol: TCP
