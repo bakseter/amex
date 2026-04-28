@@ -8,7 +8,7 @@ metadata:
     keel.sh/policy: force
     keel.sh/trigger: poll
 spec:
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 5
   selector:
     matchLabels:
@@ -47,16 +47,16 @@ spec:
             capabilities:
               drop:
                 - ALL
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - backend
-              topologyKey: bakseter.net/physical-node
+      #     affinity:
+      #       podAntiAffinity:
+      #         requiredDuringSchedulingIgnoredDuringExecution:
+      #           - labelSelector:
+      #               matchExpressions:
+      #                 - key: app
+      #                   operator: In
+      #                   values:
+      #                     - backend
+      #             topologyKey: bakseter.net/physical-node
       securityContext:
         fsGroup: 6666
         runAsNonRoot: true

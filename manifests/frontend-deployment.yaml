@@ -8,7 +8,7 @@ metadata:
     keel.sh/policy: force
     keel.sh/trigger: poll
 spec:
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 5
   selector:
     matchLabels:
@@ -43,16 +43,16 @@ spec:
       volumes:
         - name: nginx-tmp
           emptyDir: {}
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - frontend
-              topologyKey: bakseter.net/physical-node
+      #     affinity:
+      #       podAntiAffinity:
+      #         requiredDuringSchedulingIgnoredDuringExecution:
+      #           - labelSelector:
+      #               matchExpressions:
+      #                 - key: app
+      #                   operator: In
+      #                   values:
+      #                     - frontend
+      #             topologyKey: bakseter.net/physical-node
       securityContext:
         fsGroup: 65534
         runAsNonRoot: true
