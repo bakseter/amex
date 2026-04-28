@@ -8,6 +8,7 @@ from pathlib import Path
 
 import logging
 import uvicorn
+import atexit
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -104,8 +105,11 @@ _logs.set_logger_provider(logger_provider)
 exporter = OTLPLogExporter()
 logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
 
-handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+handler = LoggingHandler(level=logging.INFO, logger_provider=logger_provider)
+logging.getLogger().setLevel(logging.INFO)
 logging.getLogger().addHandler(handler)
+
+atexit.register(logger_provider.shutdown)
 
 FastAPIInstrumentor.instrument_app(app)
 
@@ -462,5 +466,5 @@ def get_meta():
 # ── Entrypoint ─────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print("\n  Open http://localhost:8000/docs\n")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    logging.info("\n  Open http://localhost:8000/docs\n")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", log_config=None)

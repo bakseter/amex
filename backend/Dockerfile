@@ -1,7 +1,7 @@
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.14-alpine
 
-RUN groupadd --system --gid 6666 nonroot \
- && useradd --system --gid 6666 --uid 6666 --create-home nonroot
+RUN addgroup nonroot --gid 6666 && \
+    adduser nonroot --uid 6666 --ingroup nonroot --disabled-password
 
 WORKDIR /app
 
@@ -25,4 +25,4 @@ ENTRYPOINT []
 
 USER nonroot
 
-CMD ["uv", "run", "main.py"]
+CMD ["uv", "run", "app/main.py"]
