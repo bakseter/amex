@@ -1,7 +1,7 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: database
+  name: amex-database
   namespace: amex
 spec:
   endpointSelector:
@@ -12,7 +12,7 @@ spec:
     # Allow traffic from backend
     - fromEndpoints:
         - matchLabels:
-            app: backend
+            app: amex-backend
       toPorts:
         - ports:
             - protocol: TCP
