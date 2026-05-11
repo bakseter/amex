@@ -29,6 +29,9 @@ jobs:
       contents: read
       security-events: write
       packages: write
+    concurrency:
+      group: '${{ github.workflow }}-${{ github.ref }}-${{ matrix.image-name }}-build'
+      cancel-in-progress: true
     env:
       IMAGE_NAME: 'ghcr.io/${{ github.repository }}/${{ matrix.image-name }}'
     steps:
