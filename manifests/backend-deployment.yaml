@@ -32,7 +32,7 @@ spec:
                   name: amex-database-app
                   key: uri
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://monitoring-alloy.monitoring.svc.cluster.local:4317
+              value: http://alloy.monitoring.svc.cluster.local:4317
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: grpc
           resources:
