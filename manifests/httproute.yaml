@@ -11,7 +11,7 @@ spec:
       namespace: tailscale
 
   hostnames:
-    - amex.ts.bakseter.net
+    - amex.bakseter.net
 
   rules:
     - matches:
