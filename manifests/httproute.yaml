@@ -22,7 +22,7 @@ spec:
         - group: ''
           kind: Service
           name: amex-frontend
-          port: http
+          port: 3000
 
     - matches:
         - path:
@@ -32,4 +32,4 @@ spec:
         - group: ''
           kind: Service
           name: amex-backend
-          port: http
+          port: 8000
