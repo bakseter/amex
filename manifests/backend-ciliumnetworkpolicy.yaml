@@ -10,15 +10,10 @@ spec:
 
   ingress:
     - fromEndpoints:
-        # Allow ingress from Tailscale
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: tailscale
-            tailscale.com/parent-resource: amex
-            tailscale.com/parent-resource-ns: amex
-        # Allow ingress from Envoy Gateway
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: envoy-gateway-system
             app.kubernetes.io/name: envoy
+            gateway.envoyproxy.io/owning-gateway-name: bakseter-net-gateway-home
       toPorts:
         - rules:
             http:
@@ -42,7 +37,6 @@ spec:
   #             protocol: TCP
 
   egress:
-    # Allow egress to kube-dns (needed for DNS resolution)
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
@@ -55,7 +49,6 @@ spec:
             dns:
               - matchPattern: '*'
 
-    # Allow egress to database
     - toEndpoints:
         - matchLabels:
             app.kubernetes.io/instance: amex-database
@@ -66,7 +59,6 @@ spec:
             - port: '5432'
               protocol: TCP
 
-    # Allow sending logs via OTLP to Grafana Alloy
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: monitoring
