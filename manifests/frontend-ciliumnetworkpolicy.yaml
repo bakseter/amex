@@ -18,8 +18,8 @@ spec:
             k8s:io.kubernetes.pod.namespace: monitoring
             app.kubernetes.io/name: prometheus-blackbox-exporter
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: amex
-            app.kubernetes.io/name: amex-frontend
+            k8s:io.kubernetes.pod.namespace: homepage
+            app.kubernetes.io/name: homepage
       toPorts:
         - ports:
             - port: '3000'
