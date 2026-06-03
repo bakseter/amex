@@ -9,7 +9,6 @@ spec:
       app.kubernetes.io/instance: amex-database
 
   ingress:
-    # Allow traffic from backend
     - fromEndpoints:
         - matchLabels:
             app: amex-backend
@@ -18,11 +17,10 @@ spec:
             - protocol: TCP
               port: '5432'
 
-    # Allow ingress from CloudNativePG operator
     - fromEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: cloudnative-pg
             k8s:io.kubernetes.pod.namespace: cnpg-system
+            app.kubernetes.io/name: cloudnative-pg
       toPorts:
         - ports:
             - port: '5432'
@@ -30,19 +28,16 @@ spec:
             - port: '8000'
               protocol: TCP
 
-  #   # Allow ingress from database replicas
-  #   - fromEndpoints:
-  #       - matchLabels:
-  #           app.kubernetes.io/instance: amex-database
-  #     toPorts:
-  #       - ports:
-  #           - port: '5432'
-  #             protocol: TCP
-  #           - port: '8000'
-  #             protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: '9187'
+              protocol: TCP
 
   egress:
-    # Allow egress to kube-dns (needed for DNS resolution)
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
@@ -55,16 +50,5 @@ spec:
             dns:
               - matchPattern: '*'
 
-    # Allow egress to kube-apiserver (needed for getting Cluster CR (?))
     - toEntities:
         - kube-apiserver
-#   # Allow egress to database replicas
-#   - toEndpoints:
-#       - matchLabels:
-#           app.kubernetes.io/instance: amex-database
-#     toPorts:
-#       - ports:
-#           - port: '5432'
-#             protocol: TCP
-#           - port: '8000'
-#             protocol: TCP
