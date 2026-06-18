@@ -13,7 +13,7 @@ dependencies = [
     "opentelemetry-instrumentation-logging==0.62b1",
     "opentelemetry-sdk==1.41.1",
     "pandas==3.0.3",
-    "pdfplumber==0.11.9",
+    "pdfplumber==0.11.10",
     "psycopg2-binary==2.9.12",
     "python-multipart==0.0.32",
     "sqlalchemy==2.0.50",
