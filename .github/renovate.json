@@ -1,15 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", "helpers:pinGitHubActionDigestsToSemver"],
-  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
   "commitMessagePrefix": "⬆️",
   "prHourlyLimit": 0,
-  "minimumReleaseAge": "3 days",
+  "minimumReleaseAge": "7 days",
   "rangeStrategy": "pin",
   "packageRules": [
     {
-      "description": "Automerge non-major updates",
-      "matchUpdateTypes": ["minor", "patch"],
+      "description": "Automerge all updates",
+      "matchUpdateTypes": ["major", "minor", "patch"],
       "automerge": true
     }
   ]
