@@ -8,9 +8,8 @@
   "rangeStrategy": "pin",
   "packageRules": [
     {
-      "description": "Automerge non-major updates (after 1.0.0)",
+      "description": "Automerge non-major updates",
       "matchUpdateTypes": ["minor", "patch"],
-      "matchCurrentVersion": "!/^0/",
       "automerge": true
     }
   ]
