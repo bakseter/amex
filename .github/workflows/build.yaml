@@ -2,7 +2,6 @@ name: Build images
 
 on:
   push:
-    branches: [master]
     paths-ignore:
       - 'manifests/**'
       - 'README.md'
@@ -23,12 +22,10 @@ jobs:
           - backend
           - frontend
     permissions:
-      actions: read
       contents: read
-      security-events: write
       packages: write
     concurrency:
-      group: '${{ github.workflow }}-${{ github.ref }}-${{ matrix.image-name }}-build'
+      group: '${{ github.workflow }}-${{ github.ref }}-${{ matrix.image-name }}'
       cancel-in-progress: true
     env:
       IMAGE_NAME: 'ghcr.io/${{ github.repository }}/${{ matrix.image-name }}'
@@ -49,9 +46,11 @@ jobs:
       - name: Build image with cache and push to registry
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
-          push: 'true'
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
           build-args: 'VITE_BACKEND_URL=https://amex.bakseter.net/api' # TODO: make this configurable at runtime?
-          tags: "${{ env.IMAGE_NAME }}:${{ github.sha }}${{ ((github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master') && format(',{0}:latest', env.IMAGE_NAME) || '' }}"
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: 'type=registry,ref=${{ env.IMAGE_NAME }}:latest'
           cache-to: 'type=inline'
           context: '${{ matrix.image-name }}'

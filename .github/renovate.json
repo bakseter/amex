@@ -4,6 +4,7 @@
   "commitMessagePrefix": "⬆️",
   "prHourlyLimit": 0,
   "minimumReleaseAge": "7 days",
+  "prCreation": "not-pending",
   "rangeStrategy": "pin",
   "packageRules": [
     {
