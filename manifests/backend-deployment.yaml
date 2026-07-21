@@ -12,11 +12,11 @@ spec:
   revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: amex-backend
+      app.kubernetes.io/name: amex-backend
   template:
     metadata:
       labels:
-        app: amex-backend
+        app.kubernetes.io/name: amex-backend
         logs.bakseter.net/scrape: 'false'
     spec:
       containers:

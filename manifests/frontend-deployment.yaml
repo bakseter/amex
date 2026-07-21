@@ -12,11 +12,11 @@ spec:
   revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: amex-frontend
+      app.kubernetes.io/name: amex-frontend
   template:
     metadata:
       labels:
-        app: amex-frontend
+        app.kubernetes.io/name: amex-frontend
     spec:
       containers:
         - name: amex-frontend

@@ -3,13 +3,11 @@ kind: Service
 metadata:
   name: amex-backend
   namespace: amex
-  labels:
-    app: amex-backend
 spec:
   ports:
     - name: http
       port: 8000
       targetPort: 8000
   selector:
-    app: amex-backend
+    app.kubernetes.io/name: amex-backend
   type: ClusterIP

@@ -11,7 +11,7 @@ spec:
   ingress:
     - fromEndpoints:
         - matchLabels:
-            app: amex-backend
+            app.kubernetes.io/name: amex-backend
       toPorts:
         - ports:
             - protocol: TCP
