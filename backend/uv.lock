@@ -29,7 +29,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = "==0.140.2" },
+    { name = "fastapi", specifier = "==0.140.7" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "opentelemetry-api", specifier = "==1.41.1" },
     { name = "opentelemetry-exporter-otlp", specifier = "==1.41.1" },
@@ -251,7 +251,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.140.2"
+version = "0.140.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -260,9 +260,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5b/fa/67d7232a733c5f5cea8859dcd6f6de78a688bb8886676808e3f5a8358008/fastapi-0.140.2.tar.gz", hash = "sha256:5f64faeb12339d783510db0498da660539195ac7b5bdf69c0fc558f4580a9724", size = 421280, upload-time = "2026-07-27T14:15:39.682Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/33/e0dfa29ccce4eb8c9a073f9e557b0d6bacbb3aa32e7ad595f678de4d036a/fastapi-0.140.7.tar.gz", hash = "sha256:09a640af2d29006345e1f28e4f031fa60f89b1a75d29f26070f3afa677d66cce", size = 422051, upload-time = "2026-07-27T17:34:45.908Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/ed/15196be41f2bf84e358d899e62daf5666ba4f6dbab4cbad87d16cc16df6d/fastapi-0.140.2-py3-none-any.whl", hash = "sha256:944336ef298148dfd97478638567b223d929aba8717ad8be73ae962a62ecd61d", size = 130883, upload-time = "2026-07-27T14:15:38.099Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/0e/00cddd6b8668884e9c7588ab0eeb73becbd1efa3eaead34397f2e9a8de49/fastapi-0.140.7-py3-none-any.whl", hash = "sha256:960bb9696d8fd19dff488aa4f67f276364542cfcce9f7e68a82fe49dce126626", size = 131085, upload-time = "2026-07-27T17:34:47.036Z" },
 ]
 
 [[package]]
