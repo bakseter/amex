@@ -4,7 +4,7 @@ metadata:
   name: amex-database
   namespace: amex
   labels:
-    bakseter.net/backup-primary: true
+    bakseter.net/backup-primary: 'true'
 spec:
   instances: 1
   storage:
