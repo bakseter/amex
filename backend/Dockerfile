@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.14-alpine@sha256:eb47c391d3a252d9d912270dd2b5e234af5493e92039fedb483f1dd1cb5659ce
+FROM ghcr.io/astral-sh/uv:python3.14-alpine@sha256:7a6d8c4ff34812917124c77a8559458488f09d5e52e7646c04599f007956966c
 
 RUN addgroup nonroot --gid 6666 && \
     adduser nonroot --uid 6666 --ingroup nonroot --disabled-password
