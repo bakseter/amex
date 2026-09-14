@@ -101,7 +101,7 @@ func listInvoiceRows(db *sql.DB) ([]InvoiceRow, error) {
 	return out, rows.Err()
 }
 
-type Tx struct {
+type Transaction struct {
 	ID             int64
 	InvoiceID      int64
 	Date           string
@@ -125,8 +125,8 @@ const txColumns = `id, invoice_id, "date", description, amount, cardholder,
                    orig_cardholder, modified, split_locked, split_reason,
                    city, country`
 
-func scanTx(s interface{ Scan(...any) error }) (Tx, error) {
-	var t Tx
+func scanTransaction(s interface{ Scan(...any) error }) (Transaction, error) {
+	var t Transaction
 	err := s.Scan(&t.ID, &t.InvoiceID, &t.Date, &t.Description, &t.Amount,
 		&t.Cardholder, &t.Category, &t.IsShared, &t.OrigCategory,
 		&t.OrigIsShared, &t.OrigCardholder, &t.Modified,
@@ -164,7 +164,7 @@ func invoiceExists(db *sql.DB, id int64) (bool, string, error) {
 
 // listTransactions returns an invoice's rows ordered by id, which is insertion
 // order and therefore already sorted by (date, cardholder) from parse time.
-func listTransactions(db *sql.DB, invoiceID int64) ([]Tx, error) {
+func listTransactions(db *sql.DB, invoiceID int64) ([]Transaction, error) {
 	rows, err := db.Query(
 		`SELECT `+txColumns+` FROM "transaction" WHERE invoice_id = $1 ORDER BY id`,
 		invoiceID,
@@ -174,9 +174,9 @@ func listTransactions(db *sql.DB, invoiceID int64) ([]Tx, error) {
 	}
 	defer rows.Close()
 
-	var out []Tx
+	var out []Transaction
 	for rows.Next() {
-		t, err := scanTx(rows)
+		t, err := scanTransaction(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -185,9 +185,9 @@ func listTransactions(db *sql.DB, invoiceID int64) ([]Tx, error) {
 	return out, rows.Err()
 }
 
-func getTransaction(db *sql.DB, id int64) (*Tx, error) {
+func getTransaction(db *sql.DB, id int64) (*Transaction, error) {
 	row := db.QueryRow(`SELECT `+txColumns+` FROM "transaction" WHERE id = $1`, id)
-	t, err := scanTx(row)
+	t, err := scanTransaction(row)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -197,16 +197,16 @@ func getTransaction(db *sql.DB, id int64) (*Tx, error) {
 	return &t, nil
 }
 
-func insertInvoice(db *sql.DB, filename string, data []byte, parsed []ParsedTx) (*Invoice, error) {
-	dbTx, err := db.Begin()
+func insertInvoice(db *sql.DB, filename string, data []byte, parsed []ParsedTransaction) (*Invoice, error) {
+	dbTransaction, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
 	var inv Invoice
 	inv.Filename = filename
-	err = dbTx.QueryRow(
+	err = dbTransaction.QueryRow(
 		`INSERT INTO invoice (filename, uploaded_at, pdf_data)
 		 VALUES ($1, $2, $3) RETURNING id, uploaded_at`,
 		filename, time.Now().UTC(), data,
@@ -215,11 +215,12 @@ func insertInvoice(db *sql.DB, filename string, data []byte, parsed []ParsedTx) 
 		return nil, err
 	}
 
-	stmt, err := dbTx.Prepare(
+	stmt, err := dbTransaction.Prepare(
 		`INSERT INTO "transaction"
 		 (invoice_id, "date", description, amount, cardholder, category, is_shared,
 		  orig_category, orig_is_shared, orig_cardholder, modified, city, country)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,false,$11,$12)`)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,false,$11,$12)`,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -234,26 +235,26 @@ func insertInvoice(db *sql.DB, filename string, data []byte, parsed []ParsedTx) 
 		}
 	}
 
-	if err := dbTx.Commit(); err != nil {
+	if err := dbTransaction.Commit(); err != nil {
 		return nil, err
 	}
 	return &inv, nil
 }
 
 func deleteInvoice(db *sql.DB, id int64) (bool, error) {
-	dbTx, err := db.Begin()
+	dbTransaction, err := db.Begin()
 	if err != nil {
 		return false, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
 	// Delete children explicitly: the old SQLAlchemy cascade was ORM-level, so an
 	// existing database may not have ON DELETE CASCADE on the foreign key.
-	if _, err := dbTx.Exec(`DELETE FROM "transaction" WHERE invoice_id = $1`, id); err != nil {
+	if _, err := dbTransaction.Exec(`DELETE FROM "transaction" WHERE invoice_id = $1`, id); err != nil {
 		return false, err
 	}
 
-	res, err := dbTx.Exec(`DELETE FROM invoice WHERE id = $1`, id)
+	res, err := dbTransaction.Exec(`DELETE FROM invoice WHERE id = $1`, id)
 	if err != nil {
 		return false, err
 	}
@@ -264,26 +265,28 @@ func deleteInvoice(db *sql.DB, id int64) (bool, error) {
 	if n == 0 {
 		return false, nil
 	}
-	return true, dbTx.Commit()
+	return true, dbTransaction.Commit()
 }
 
-func updateTransaction(db *sql.DB, t *Tx) error {
+func updateTransaction(db *sql.DB, t *Transaction) error {
 	_, err := db.Exec(
 		`UPDATE "transaction"
 		 SET category = $1, is_shared = $2, cardholder = $3, modified = $4
 		 WHERE id = $5`,
-		t.Category, t.IsShared, t.Cardholder, t.Modified, t.ID)
+		t.Category, t.IsShared, t.Cardholder, t.Modified, t.ID,
+	)
 	return err
 }
 
 // updateTransactionFull also writes the split lock and its reason.
-func updateTransactionFull(db *sql.DB, t *Tx) error {
+func updateTransactionFull(db *sql.DB, t *Transaction) error {
 	_, err := db.Exec(
 		`UPDATE "transaction"
 		 SET category = $1, is_shared = $2, cardholder = $3, modified = $4,
 		     split_locked = $5, split_reason = $6
 		 WHERE id = $7`,
 		t.Category, t.IsShared, t.Cardholder, t.Modified,
-		t.SplitLocked, t.SplitReason, t.ID)
+		t.SplitLocked, t.SplitReason, t.ID,
+	)
 	return err
 }

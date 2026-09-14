@@ -192,9 +192,9 @@ func (t *mcpTools) previewCategoryRules(ctx context.Context, req *mcp.CallToolRe
 // ── apply_category_rules ───────────────────────────────────────────────────────
 
 type applyArgs struct {
-	Rules  []ruleArg `json:"rules" jsonschema:"the rules to save and apply, in priority order"`
-	Scope  string    `json:"scope,omitempty" jsonschema:"uncategorized (default) or all"`
-	Persist *bool    `json:"persist,omitempty" jsonschema:"save the rules so future uploads use them too; defaults to true"`
+	Rules   []ruleArg `json:"rules" jsonschema:"the rules to save and apply, in priority order"`
+	Scope   string    `json:"scope,omitempty" jsonschema:"uncategorized (default) or all"`
+	Persist *bool     `json:"persist,omitempty" jsonschema:"save the rules so future uploads use them too; defaults to true"`
 }
 
 type applyOut struct {
@@ -288,7 +288,7 @@ func (t *mcpTools) deleteCategoryRules(ctx context.Context, req *mcp.CallToolReq
 	}
 
 	return text(fmt.Sprintf("Deleted %d rules. Transactions already categorized by them keep "+
-		"their category; run apply_category_rules with scope=all to redo them.", n)),
+			"their category; run apply_category_rules with scope=all to redo them.", n)),
 		deleteRulesOut{Deleted: n}, nil
 }
 
@@ -322,7 +322,7 @@ func (t *mcpTools) updateTransactions(ctx context.Context, req *mcp.CallToolRequ
 
 	// Validate everything before writing anything, so a typo in the last entry
 	// does not leave the first forty applied.
-	txs := make([]*Tx, 0, len(in.Updates))
+	txs := make([]*Transaction, 0, len(in.Updates))
 	for _, u := range in.Updates {
 		if u.Category == "" && u.Cardholder == "" && u.IsShared == nil {
 			return nil, batchUpdateOut{}, fmt.Errorf("transaction %d: nothing to change", u.TransactionID)
@@ -359,13 +359,13 @@ func (t *mcpTools) updateTransactions(ctx context.Context, req *mcp.CallToolRequ
 		txs = append(txs, tx)
 	}
 
-	dbTx, err := t.db.Begin()
+	dbTransaction, err := t.db.Begin()
 	if err != nil {
 		return nil, batchUpdateOut{}, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
-	stmt, err := dbTx.Prepare(`
+	stmt, err := dbTransaction.Prepare(`
 		UPDATE "transaction" SET category = $1, is_shared = $2, cardholder = $3, modified = $4
 		WHERE id = $5`)
 	if err != nil {
@@ -391,7 +391,7 @@ func (t *mcpTools) updateTransactions(ctx context.Context, req *mcp.CallToolRequ
 			tx.ID, truncate(tx.Description, 34), tx.Category, sharedLabel(tx.IsShared))
 	}
 
-	if err := dbTx.Commit(); err != nil {
+	if err := dbTransaction.Commit(); err != nil {
 		return nil, batchUpdateOut{}, err
 	}
 	out.Updated = len(out.Transactions)

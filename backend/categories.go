@@ -24,8 +24,8 @@ type Category struct {
 
 var customCategories atomic.Pointer[[]Category]
 
-func loadCategories(db *sql.DB) error {
-	rows, err := db.Query(`SELECT name, shared_default, note, created_at FROM category ORDER BY name`)
+func loadCategories(database *sql.DB) error {
+	rows, err := database.Query(`SELECT name, shared_default, note, created_at FROM category ORDER BY name`)
 	if err != nil {
 		return err
 	}
@@ -190,23 +190,24 @@ func createCategories(db *sql.DB, cats []Category) ([]Category, []CategoryConfli
 		return nil, conflicts, nil
 	}
 
-	dbTx, err := db.Begin()
+	dbTransaction, err := db.Begin()
 	if err != nil {
 		return nil, nil, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
 	for _, c := range toCreate {
-		_, err := dbTx.Exec(
+		_, err := dbTransaction.Exec(
 			`INSERT INTO category (name, shared_default, note) VALUES ($1, $2, $3)
 			 ON CONFLICT (name) DO NOTHING`,
-			c.Name, c.SharedDefault, c.Note)
+			c.Name, c.SharedDefault, c.Note,
+		)
 		if err != nil {
 			return nil, nil, err
 		}
 	}
 
-	if err := dbTx.Commit(); err != nil {
+	if err := dbTransaction.Commit(); err != nil {
 		return nil, nil, err
 	}
 	return toCreate, conflicts, loadCategories(db)

@@ -81,50 +81,50 @@ func main() {
 		os.Exit(1)
 	}
 
-	s := &Server{db: db}
+	server := &Server{db: db}
 
-	r := gin.Default()
-	r.Use(corsMiddleware(env("CORS_ORIGINS", "http://localhost:5173")))
+	router := gin.Default()
+	router.Use(corsMiddleware(env("CORS_ORIGINS", "http://localhost:5173")))
 
 	// For OpenTelemetry, add otelgin here:
 	//   r.Use(otelgin.Middleware("amex-backend"))
 	// from go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin
 
-	api := r.Group("/api")
+	api := router.Group("/api")
 	{
-		api.POST("/invoices", s.uploadInvoice)
-		api.GET("/invoices", s.listInvoices)
+		api.POST("/invoices", server.uploadInvoice)
+		api.GET("/invoices", server.listInvoices)
 
 		// Old path, kept so the frontend does not have to change; it now
 		// returns the stored CSV rather than a PDF.
-		api.GET("/invoices/:invoice_id/pdf", s.downloadInvoiceFile)
-		api.GET("/invoices/:invoice_id/file", s.downloadInvoiceFile)
-		api.GET("/invoices/:invoice_id/csv", s.downloadInvoiceFile)
+		api.GET("/invoices/:invoice_id/pdf", server.downloadInvoiceFile)
+		api.GET("/invoices/:invoice_id/file", server.downloadInvoiceFile)
+		api.GET("/invoices/:invoice_id/csv", server.downloadInvoiceFile)
 
-		api.DELETE("/invoices/:invoice_id", s.deleteInvoice)
+		api.DELETE("/invoices/:invoice_id", server.deleteInvoice)
 
-		api.GET("/invoices/:invoice_id/transactions", s.getTransactions)
-		api.PATCH("/transactions/:transaction_id", s.updateTransaction)
+		api.GET("/invoices/:invoice_id/transactions", server.getTransactions)
+		api.PATCH("/transactions/:transaction_id", server.updateTransaction)
 
-		api.GET("/invoices/:invoice_id/summary", s.getSummary)
+		api.GET("/invoices/:invoice_id/summary", server.getSummary)
 
-		api.POST("/invoices/:invoice_id/export", s.exportRedirect)
-		api.GET("/invoices/:invoice_id/export/transactions", s.exportTransactions)
-		api.GET("/invoices/:invoice_id/export/summary", s.exportSummary)
+		api.POST("/invoices/:invoice_id/export", server.exportRedirect)
+		api.GET("/invoices/:invoice_id/export/transactions", server.exportTransactions)
+		api.GET("/invoices/:invoice_id/export/summary", server.exportSummary)
 
-		api.GET("/meta", s.getMeta)
+		api.GET("/meta", server.getMeta)
 	}
 
 	// MCP endpoint for kagent and other MCP clients.
 	if env("MCP_ENABLED", "true") == "true" {
 		path := env("MCP_PATH", "/mcp")
-		mountMCP(r, db, path)
+		mountMCP(router, db, path)
 		slog.Info("MCP endpoint enabled", "path", path)
 	}
 
 	addr := ":" + env("PORT", "8000")
 	slog.Info("listening", "addr", addr)
-	if err := r.Run(addr); err != nil {
+	if err := router.Run(addr); err != nil {
 		slog.Error("server stopped", "err", err)
 		os.Exit(1)
 	}

@@ -68,7 +68,7 @@ func owes(amount float64, cardholder string, isShared bool) map[string]float64 {
 	return res
 }
 
-func toDTO(t Tx) txDTO {
+func toDTO(t Transaction) txDTO {
 	return txDTO{
 		ID:          t.ID,
 		InvoiceID:   t.InvoiceID,
@@ -115,7 +115,7 @@ func pathID(c *gin.Context, name string) (int64, bool) {
 
 // loadInvoiceTransactions resolves the invoice and its rows, writing a 404 when
 // the invoice does not exist.
-func (s *Server) loadInvoiceTransactions(c *gin.Context) (string, []Tx, bool) {
+func (s *Server) loadInvoiceTransactions(c *gin.Context) (string, []Transaction, bool) {
 	id, ok := pathID(c, "invoice_id")
 	if !ok {
 		return "", nil, false
@@ -335,7 +335,7 @@ func (s *Server) updateTransaction(c *gin.Context) {
 
 // categoryTotals aggregates per category, preserving first-appearance order so
 // ties sort the same way Python's stable sort did.
-func categoryTotals(txs []Tx) ([]string, map[string]map[string]float64) {
+func categoryTotals(txs []Transaction) ([]string, map[string]map[string]float64) {
 	persons := PersonNames()
 	var order []string
 	totals := map[string]map[string]float64{}
@@ -362,7 +362,7 @@ func categoryTotals(txs []Tx) ([]string, map[string]map[string]float64) {
 	return order, totals
 }
 
-func personTotals(txs []Tx) map[string]float64 {
+func personTotals(txs []Transaction) map[string]float64 {
 	out := map[string]float64{}
 	for _, p := range PersonNames() {
 		out[p] = 0
@@ -442,8 +442,10 @@ func (s *Server) exportTransactions(c *gin.Context) {
 	persons := PersonNames()
 
 	sendCSV(c, stem(filename)+".csv", func(w *csv.Writer) error {
-		head := []string{"Date", "Description", "Category", "Amount (NOK)",
-			"Cardholder", "Shared", "Modified"}
+		head := []string{
+			"Date", "Description", "Category", "Amount (NOK)",
+			"Cardholder", "Shared", "Modified",
+		}
 		for _, p := range persons {
 			head = append(head, p+" owes (NOK)")
 		}

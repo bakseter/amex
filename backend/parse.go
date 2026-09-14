@@ -129,7 +129,7 @@ func CardholderNames() []string {
 
 // ── Parsed transaction ─────────────────────────────────────────────────────────
 
-type ParsedTx struct {
+type ParsedTransaction struct {
 	Date        string // dd.mm.yy, same format the PDF parser produced
 	Description string
 	Amount      float64
@@ -153,7 +153,7 @@ var dateLayouts = []string{
 }
 
 // ParseCSV reads an Amex CSV export and returns the transactions it contains.
-func ParseCSV(data []byte) ([]ParsedTx, error) {
+func ParseCSV(data []byte) ([]ParsedTransaction, error) {
 	data = bytes.TrimPrefix(data, []byte{0xEF, 0xBB, 0xBF}) // Excel loves a BOM
 
 	r := csv.NewReader(bytes.NewReader(data))
@@ -182,7 +182,7 @@ func ParseCSV(data []byte) ([]ParsedTx, error) {
 	}
 
 	defaultHolder := Cardholders[0].Name
-	out := make([]ParsedTx, 0, len(rows)-1)
+	out := make([]ParsedTransaction, 0, len(rows)-1)
 
 	for _, row := range rows[1:] {
 		raw := field(row, iAmount)
@@ -210,7 +210,7 @@ func ParseCSV(data []byte) ([]ParsedTx, error) {
 		holder := matchCardholder(field(row, iMember), defaultHolder)
 		cat, shared := classify(desc)
 
-		out = append(out, ParsedTx{
+		out = append(out, ParsedTransaction{
 			Date:        when.Format("02.01.06"),
 			Description: desc,
 			Amount:      amount,

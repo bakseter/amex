@@ -23,10 +23,10 @@ import (
 // ── review_splits ──────────────────────────────────────────────────────────────
 
 type reviewArgs struct {
-	InvoiceID      int64   `json:"invoice_id,omitempty" jsonschema:"limit to one statement; omit or 0 for all"`
-	MinImpact      float64 `json:"min_impact,omitempty" jsonschema:"only show rows where flipping the split moves at least this many NOK; default 100"`
-	IncludeLocked  bool    `json:"include_locked,omitempty" jsonschema:"also show splits that were already decided deliberately; default false"`
-	Limit          int     `json:"limit,omitempty" jsonschema:"maximum rows to return, default 25, max 100"`
+	InvoiceID     int64   `json:"invoice_id,omitempty" jsonschema:"limit to one statement; omit or 0 for all"`
+	MinImpact     float64 `json:"min_impact,omitempty" jsonschema:"only show rows where flipping the split moves at least this many NOK; default 100"`
+	IncludeLocked bool    `json:"include_locked,omitempty" jsonschema:"also show splits that were already decided deliberately; default false"`
+	Limit         int     `json:"limit,omitempty" jsonschema:"maximum rows to return, default 25, max 100"`
 }
 
 type splitCandidate struct {
@@ -88,9 +88,9 @@ func (t *mcpTools) reviewSplits(ctx context.Context, req *mcp.CallToolRequest, i
 	}
 	defer rows.Close()
 
-	var all []Tx
+	var all []Transaction
 	for rows.Next() {
-		tx, err := scanTx(rows)
+		tx, err := scanTransaction(rows)
 		if err != nil {
 			return nil, reviewOut{}, err
 		}
@@ -102,7 +102,7 @@ func (t *mcpTools) reviewSplits(ctx context.Context, req *mcp.CallToolRequest, i
 
 	// Context signals, computed once over the whole set: was the other person
 	// spending on the same day, and was either of them abroad.
-	perDay := map[string]map[string]int{}  // date -> cardholder -> count
+	perDay := map[string]map[string]int{}     // date -> cardholder -> count
 	abroadDay := map[string]map[string]bool{} // date -> cardholder -> abroad
 	for _, tx := range all {
 		if perDay[tx.Date] == nil {
@@ -230,7 +230,7 @@ func (t *mcpTools) setSplits(ctx context.Context, req *mcp.CallToolRequest, in s
 	}
 
 	type pending struct {
-		tx     *Tx
+		tx     *Transaction
 		shared bool
 		reason string
 		move   float64
@@ -257,13 +257,13 @@ func (t *mcpTools) setSplits(ctx context.Context, req *mcp.CallToolRequest, in s
 		todo = append(todo, pending{tx: tx, shared: s.IsShared, reason: strings.TrimSpace(s.Reason), move: move})
 	}
 
-	dbTx, err := t.db.Begin()
+	dbTransaction, err := t.db.Begin()
 	if err != nil {
 		return nil, setSplitsOut{}, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
-	stmt, err := dbTx.Prepare(`
+	stmt, err := dbTransaction.Prepare(`
 		UPDATE "transaction"
 		SET is_shared    = $1,
 		    split_locked = true,
@@ -290,7 +290,7 @@ func (t *mcpTools) setSplits(ctx context.Context, req *mcp.CallToolRequest, in s
 			p.tx.ID, truncate(p.tx.Description, 30), sharedLabel(p.shared), p.reason)
 	}
 
-	if err := dbTx.Commit(); err != nil {
+	if err := dbTransaction.Commit(); err != nil {
 		return nil, setSplitsOut{}, err
 	}
 

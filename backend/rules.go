@@ -96,11 +96,11 @@ func currentRules() []CategoryRule {
 
 // saveCategoryRules upserts by pattern and returns the stored rules.
 func saveCategoryRules(db *sql.DB, rules []CategoryRule) ([]CategoryRule, error) {
-	dbTx, err := db.Begin()
+	dbTransaction, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
 	saved := make([]CategoryRule, 0, len(rules))
 	for _, r := range rules {
@@ -110,7 +110,7 @@ func saveCategoryRules(db *sql.DB, rules []CategoryRule) ([]CategoryRule, error)
 		if r.IsShared != nil {
 			shared = *r.IsShared
 		}
-		err := dbTx.QueryRow(`
+		err := dbTransaction.QueryRow(`
 			INSERT INTO category_rule (pattern, category, is_shared) VALUES ($1, $2, $3)
 			ON CONFLICT (pattern) DO UPDATE
 			SET category = EXCLUDED.category, is_shared = EXCLUDED.is_shared
@@ -122,7 +122,7 @@ func saveCategoryRules(db *sql.DB, rules []CategoryRule) ([]CategoryRule, error)
 		saved = append(saved, r)
 	}
 
-	if err := dbTx.Commit(); err != nil {
+	if err := dbTransaction.Commit(); err != nil {
 		return nil, err
 	}
 	return saved, loadCategoryRules(db)
@@ -232,13 +232,13 @@ func evaluateRules(db *sql.DB, rules []CategoryRule, scopeAll bool) ([]RuleChang
 // applyChanges writes a set of changes in one database transaction, so a
 // failure part-way through leaves nothing half-applied.
 func applyChanges(db *sql.DB, changes []RuleChange) error {
-	dbTx, err := db.Begin()
+	dbTransaction, err := db.Begin()
 	if err != nil {
 		return err
 	}
-	defer dbTx.Rollback()
+	defer dbTransaction.Rollback()
 
-	stmt, err := dbTx.Prepare(`
+	stmt, err := dbTransaction.Prepare(`
 		UPDATE "transaction"
 		SET category  = $1,
 		    is_shared = $2,
@@ -257,7 +257,7 @@ func applyChanges(db *sql.DB, changes []RuleChange) error {
 		}
 	}
 
-	return dbTx.Commit()
+	return dbTransaction.Commit()
 }
 
 // ── Grouping uncategorized spend by merchant ───────────────────────────────────

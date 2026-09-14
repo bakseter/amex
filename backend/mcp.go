@@ -20,7 +20,8 @@ type mcpTools struct{ db *sql.DB }
 func mountMCP(r *gin.Engine, db *sql.DB, path string) {
 	server := newMCPServer(db)
 	handler := mcp.NewStreamableHTTPHandler(
-		func(*http.Request) *mcp.Server { return server }, nil)
+		func(*http.Request) *mcp.Server { return server }, nil,
+	)
 	r.Any(path, gin.WrapH(handler))
 }
 
@@ -325,7 +326,7 @@ func (t *mcpTools) searchTransactions(ctx context.Context, req *mcp.CallToolRequ
 	var b strings.Builder
 
 	for rows.Next() {
-		tx, err := scanTx(rows)
+		tx, err := scanTransaction(rows)
 		if err != nil {
 			return nil, searchOut{}, err
 		}
