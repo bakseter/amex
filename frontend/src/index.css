@@ -1,23 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
 @import 'tailwindcss';
 
 @theme {
-    --font-mono: 'Geist Mono', monospace;
-    --font-serif: 'Instrument Serif', serif;
+    /* System stack: matches whatever the OS already renders well. */
+    --font-sans:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, sans-serif;
 
-    --color-bg: #0c0c0e;
-    --color-surface: #111114;
-    --color-surface2: #18181c;
-    --color-border: #222228;
-    --color-border2: #2e2e38;
-    --color-text: #e2e2e8;
-    --color-muted: #5a5a68;
-    --color-muted2: #7a7a8a;
+    --color-bg: #ffffff;
+    --color-surface: #f7f7f8;
+    --color-surface2: #efeff1;
+    --color-border: #e8e8ea;
+    --color-border2: #d6d6da;
+    --color-text: #1c1c1e;
+    --color-muted: #9a9aa0;
+    --color-muted2: #6e6e76;
 
-    --color-andreas: #60a5fa;
-    --color-nikoline: #fb923c;
-    --color-shared: #4ade80;
-    --color-danger: #f87171;
+    --color-andreas: #2563eb;
+    --color-nikoline: #ea580c;
+    --color-shared: #16a34a;
+    --color-danger: #dc2626;
 }
 
 * {
@@ -30,26 +31,44 @@ body,
     height: 100%;
     background: var(--color-bg);
     color: var(--color-text);
-    font-family: var(--font-mono);
-    font-size: 13px;
+    font-family: var(--font-sans);
+    font-size: 14px;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Thin scrollbars everywhere */
+/* Figures line up column to column; this is a ledger. */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-andreas);
+    outline-offset: 1px;
+    border-radius: 4px;
+}
+
 * {
     scrollbar-width: thin;
     scrollbar-color: var(--color-border2) transparent;
 }
 ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 8px;
+    height: 8px;
 }
 ::-webkit-scrollbar-thumb {
     background: var(--color-border2);
-    border-radius: 2px;
+    border-radius: 4px;
 }
 
-/* Row hover transition */
 .tx-row {
-    transition: background 60ms ease;
+    transition: background 80ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }

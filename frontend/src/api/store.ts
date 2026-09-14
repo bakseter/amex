@@ -1,3 +1,4 @@
+// api/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 
 import api from '@/api/transaction';

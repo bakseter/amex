@@ -15,14 +15,30 @@ spec:
             app.kubernetes.io/name: envoy
             gateway.envoyproxy.io/owning-gateway-name: tailscale-home
       toPorts:
-        - rules:
-            http:
-              - path: '/api/.*'
-          ports:
+        - ports:
             - port: '8000'
               protocol: TCP
+          rules:
+            http:
+              - path: '/api/.*'
 
-  #   # Allow ingress from Prometheus for metrics scraping
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kagent
+            app.kubernetes.io/name: kagent
+            app.kubernetes.io/component: controller
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kagent
+            app.kubernetes.io/managed-by: kagent
+            app.kubernetes.io/name: amex-agent
+      toPorts:
+        - ports:
+            - port: '8000'
+              protocol: TCP
+          rules:
+            http:
+              - path: '/mcp$'
+
   #   - fromEndpoints:
   #       - matchLabels:
   #           k8s:io.kubernetes.pod.namespace: monitoring
@@ -53,9 +69,7 @@ spec:
         - matchLabels:
             app.kubernetes.io/instance: amex-database
       toPorts:
-        - rules:
-            http: []
-          ports:
+        - ports:
             - port: '5432'
               protocol: TCP
 

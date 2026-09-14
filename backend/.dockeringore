@@ -1,7 +1,4 @@
-__pycache__
 Dockerfile
 compose.yaml
 .gitignore
 .dockerignore
-.ruff-cache
-.venv

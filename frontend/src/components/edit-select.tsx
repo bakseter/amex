@@ -1,22 +1,38 @@
+// components/edit-select.tsx
 const EditSelect = ({
     value,
     options,
     onChange,
+    color,
+    tone = 'default',
 }: {
     value: string;
     options: string[];
-    onChange: (v: string) => void;
+    onChange: (value: string) => void;
+    color?: string;
+    tone?: 'default' | 'attention';
 }) => (
-        <select
-            value={value}
-            onChange={(event) => { onChange(event.target.value); }}
-            onClick={(event) => { event.stopPropagation(); }}
-            className="text-xs bg-transparent border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:border-blue-400 max-w-[140px]"
-        >
-            {options.map((option) => (
-                <option key={option}>{option}</option>
-            ))}
-        </select>
-    );
+    <select
+        value={value}
+        onChange={(event) => {
+            onChange(event.target.value);
+        }}
+        onClick={(event) => {
+            event.stopPropagation();
+        }}
+        style={color ? { color } : undefined}
+        className={`max-w-[160px] cursor-pointer truncate rounded-md border bg-transparent px-1.5 py-1 focus:outline-none ${
+            tone === 'attention'
+                ? 'border-transparent text-danger hover:bg-surface'
+                : 'border-transparent hover:bg-surface'
+        }`}
+    >
+        {options.map((option) => (
+            <option key={option} value={option}>
+                {option}
+            </option>
+        ))}
+    </select>
+);
 
 export default EditSelect;

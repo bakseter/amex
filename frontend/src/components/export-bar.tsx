@@ -1,23 +1,32 @@
+// components/export-bar.tsx
 import { backendUrl } from '@/api/transaction';
 
 const ExportBar = ({ invoiceId }: { invoiceId: number }) => {
-    const base = `${backendUrl}/api/invoices/${String(invoiceId)}/export`;
+    // backendUrl already ends in /api — adding it again was the old bug.
+    const base = `${backendUrl}/invoices/${String(invoiceId)}`;
 
     return (
-        <div className="flex gap-2 px-3 py-2 border-t border-gray-100 shrink-0 text-xs">
+        <div className="flex shrink-0 items-center gap-4 border-t border-border px-5 py-2.5 text-xs text-muted2">
             <a
-                href={`${base}/transactions`}
+                href={`${base}/export/transactions`}
                 download
-                className="text-blue-500 hover:underline"
+                className="hover:text-text"
             >
-                ↓ Transactions CSV
+                Download transactions
             </a>
             <a
-                href={`${base}/summary`}
+                href={`${base}/export/summary`}
                 download
-                className="text-blue-500 hover:underline"
+                className="hover:text-text"
             >
-                ↓ Summary CSV
+                Download summary
+            </a>
+            <a
+                href={`${base}/csv`}
+                download
+                className="ml-auto hover:text-text"
+            >
+                Original file
             </a>
         </div>
     );

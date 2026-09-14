@@ -31,12 +31,15 @@ spec:
               value: http://alloy.monitoring.svc.cluster.local:4317
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: grpc
+          readinessProbe:
+            httpGet:
+              path: /api/meta
+              port: http
           resources:
             requests:
               cpu: 25m
               memory: 64Mi
             limits:
-              cpu: 250m
               memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
@@ -54,11 +57,11 @@ spec:
       #                     - amex-backend
       #             topologyKey: bakseter.net/physical-node
       securityContext:
-        fsGroup: 6666
+        fsGroup: 65534
         runAsNonRoot: true
-        runAsGroup: 6666
-        runAsUser: 6666
+        runAsGroup: 65534
+        runAsUser: 65534
         seccompProfile:
           type: RuntimeDefault
         supplementalGroups:
-          - 6666
+          - 65534

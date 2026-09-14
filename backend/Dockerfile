@@ -1,28 +1,25 @@
-FROM ghcr.io/astral-sh/uv:python3.14-alpine@sha256:7a6d8c4ff34812917124c77a8559458488f09d5e52e7646c04599f007956966c
+FROM golang:alpine AS build
 
-RUN addgroup nonroot --gid 6666 && \
-    adduser nonroot --uid 6666 --ingroup nonroot --disabled-password
+ENV GO111MODULE=on CGO_ENABLED=0 GOOS=linux
 
 WORKDIR /app
 
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
-ENV UV_NO_DEV=1
+RUN apk add --no-cache ca-certificates
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project
+COPY go.mod go.sum ./
+RUN go mod download
 
-COPY . /app
+COPY *.go ./
+RUN go build -o ./out/executable .
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked && \
-    chown -R nonroot:nonroot /app
 
-ENV PATH="/app/.venv/bin:$PATH"
-ENTRYPOINT []
+FROM scratch
 
-USER nonroot
+COPY --from=build /app/out/executable /executable
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-CMD ["uv", "run", "app/main.py"]
+USER 65534:65534
+
+EXPOSE 8080
+
+ENTRYPOINT ["/executable"]

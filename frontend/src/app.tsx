@@ -1,30 +1,38 @@
+// app.tsx
 import { useState } from 'react';
 
-import { useListInvoicesQuery } from '@/api/transaction';
+import {
+    useGetTransactionsQuery,
+    useListInvoicesQuery,
+} from '@/api/transaction';
 import ExportBar from '@/components/export-bar';
 import InvoiceRow from '@/components/invoice-row';
 import Summary from '@/components/summary';
 import TransactionTable from '@/components/transaction-table';
 import UploadZone from '@/components/upload-zone';
+import { monthLabel } from '@/utils/utils';
 
 const App = () => {
     const { data: invoices = [] } = useListInvoicesQuery();
     const [activeId, setActiveId] = useState<number | null>(null);
     const [showInvoices, setShowInvoices] = useState(false);
 
-    // Auto-select the most recent invoice
     const selectedId = activeId ?? invoices[0]?.id;
+    const selected = invoices.find((invoice) => invoice.id === selectedId);
+
+    // Only for the header period label; the table fetches this too and RTK
+    // Query dedupes the request.
+    const { data: transactions = [] } = useGetTransactionsQuery(
+        selectedId ?? 0,
+        { skip: selectedId === undefined }
+    );
 
     return (
-        <div className="flex flex-col md:flex-row h-screen overflow-hidden font-sans text-gray-800 bg-white">
-            {/* Left sidebar — invoice list */}
-            <div
-                className={`${showInvoices ? 'flex' : 'hidden'} md:flex w-full md:w-64 shrink-0 border-r border-gray-100 flex-col overflow-hidden absolute md:relative z-10 bg-white h-full`}
+        <div className="flex h-screen flex-col overflow-hidden bg-bg text-text md:flex-row">
+            <aside
+                className={`${showInvoices ? 'flex' : 'hidden'} absolute z-10 h-full w-full shrink-0 flex-col overflow-hidden border-r border-border bg-surface md:relative md:flex md:w-64`}
             >
-                <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-                        Invoices
-                    </div>
+                <div className="p-3">
                     <UploadZone
                         onUploaded={(id) => {
                             setActiveId(id);
@@ -32,64 +40,61 @@ const App = () => {
                         }}
                     />
                 </div>
-                <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-                    {invoices.length === 0 && (
-                        <div className="px-2 py-4 text-xs text-center text-gray-300">
-                            No invoices yet
+                <div className="flex-1 overflow-y-auto pb-2">
+                    {invoices.length === 0 ? (
+                        <div className="px-5 py-4 text-sm text-muted2">
+                            No statements yet. Drop one above to get started.
                         </div>
+                    ) : (
+                        invoices.map((invoice) => (
+                            <InvoiceRow
+                                key={invoice.id}
+                                invoice={invoice}
+                                active={invoice.id === selectedId}
+                                onSelect={() => {
+                                    setActiveId(invoice.id);
+                                    setShowInvoices(false);
+                                }}
+                            />
+                        ))
                     )}
-                    {invoices.map((invoice) => (
-                        <InvoiceRow
-                            key={invoice.id}
-                            invoice={invoice}
-                            active={invoice.id === selectedId}
-                            onSelect={() => {
-                                setActiveId(invoice.id);
-                                setShowInvoices(false);
-                            }}
-                        />
-                    ))}
                 </div>
-            </div>
+            </aside>
 
-            {/* Main — transactions */}
-            <div className="flex flex-col flex-1 overflow-hidden">
-                {selectedId ? (
+            <main className="flex flex-1 flex-col overflow-hidden">
+                {selectedId === undefined ? (
+                    <div className="flex flex-1 items-center justify-center px-6 text-center text-muted2">
+                        Upload an Amex CSV export to see who owes what.
+                    </div>
+                ) : (
                     <>
-                        <div className="flex md:hidden items-center gap-2 px-3 py-2 border-b border-gray-100 text-xs">
+                        <header className="flex shrink-0 items-baseline gap-3 border-b border-border px-5 py-3">
                             <button
                                 onClick={() => {
                                     setShowInvoices((show) => !show);
                                 }}
-                                className="text-blue-500 underline"
+                                className="text-sm text-muted2 hover:text-text md:hidden"
                             >
-                                {showInvoices
-                                    ? 'Hide invoices'
-                                    : 'Switch invoice'}
+                                {showInvoices ? 'Close' : 'Statements'}
                             </button>
-                            <span className="text-gray-400 truncate ml-auto">
-                                {
-                                    invoices.find(
-                                        (invoice) => invoice.id === selectedId
-                                    )?.filename
-                                }
+                            <h1 className="text-base font-semibold">
+                                {monthLabel(transactions) || selected?.filename}
+                            </h1>
+                            <span className="truncate text-xs text-muted">
+                                {selected?.filename}
                             </span>
-                        </div>
+                        </header>
+
                         <TransactionTable invoiceId={selectedId} />
                         <ExportBar invoiceId={selectedId} />
                     </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center text-sm text-gray-300">
-                        Upload an invoice to get started
-                    </div>
                 )}
-            </div>
+            </main>
 
-            {/* Right sidebar — summary */}
-            {selectedId && (
-                <div className="hidden md:block w-52 shrink-0 border-l border-gray-100 p-4 overflow-y-auto">
+            {selectedId !== undefined && (
+                <aside className="hidden w-64 shrink-0 overflow-y-auto border-l border-border p-5 lg:block">
                     <Summary invoiceId={selectedId} />
-                </div>
+                </aside>
             )}
         </div>
     );
