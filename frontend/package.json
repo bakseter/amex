@@ -28,7 +28,7 @@
         "eslint-plugin-react-hooks": "7.1.1",
         "eslint-plugin-react-refresh": "0.5.8",
         "eslint-plugin-simple-import-sort": "14.0.0",
-        "eslint-plugin-unicorn": "79.0.0",
+        "eslint-plugin-unicorn": "80.0.0",
         "globals": "17.14.0",
         "prettier": "3.10.1",
         "typescript": "7.0.2",
